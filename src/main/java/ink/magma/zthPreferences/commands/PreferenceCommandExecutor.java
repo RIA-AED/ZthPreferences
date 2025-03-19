@@ -55,7 +55,7 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
             }
             case "toggle" -> {
                 if (args.length < 2) {
-                    player.sendMessage(miniMessage.deserialize("<gray>用法: <white>/pref toggle <aqua><配置项>"));
+                    player.sendMessage(miniMessage.deserialize("<gray>用法: <white>/pref toggle <配置项>"));
                     return true;
                 }
                 return togglePreference(player, playerId, args[1]);
@@ -108,7 +108,7 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
             boolean newValue = !currentValue;
             preferenceManager.setPreference(playerId, preferenceType, newValue);
 
-            player.sendMessage(miniMessage.deserialize(String.format("<white>设置 <aqua>%s <white>已切换为：%s",
+            player.sendMessage(miniMessage.deserialize(String.format("<white>设置 %s 已切换为：%s",
                 preferenceType.getDisplayName(), newValue ? "<green>启用" : "<red>禁用")));
             return true;
         } catch (IllegalArgumentException e) {
@@ -129,7 +129,7 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
     private boolean showHelp(Player player) {
         player.sendMessage(miniMessage.deserialize("<white>===== <white>偏好设置帮助 <white>====="));
         player.sendMessage(miniMessage.deserialize("<gray>/pref show - 显示当前设置"));
-        player.sendMessage(miniMessage.deserialize("<gray>/pref toggle <aqua><setting> <gray>- 切换指定设置"));
+        player.sendMessage(miniMessage.deserialize("<gray>/pref toggle <配置项> - 切换指定设置"));
         player.sendMessage(miniMessage.deserialize("<gray>/pref help - 显示此帮助信息"));
         player.sendMessage(miniMessage.deserialize("<gray>注意：设置项可以使用显示名称或内部名称"));
         player.sendMessage(miniMessage.deserialize("<gray>可用设置："));
