@@ -66,7 +66,7 @@ public class PreferenceListener implements Listener {
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
             UUID playerId = player.getUniqueId();
-            boolean allowPickup = preferenceManager.getPreference(playerId, PreferenceType.PICKUP_ITEMS.getKey());
+            boolean allowPickup = preferenceManager.getPreference(playerId, PreferenceType.PICKUP_ITEMS);
 
             if (!allowPickup) {
                 event.setCancelled(true);
