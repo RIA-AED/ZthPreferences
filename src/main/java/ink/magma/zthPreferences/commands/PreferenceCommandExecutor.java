@@ -123,8 +123,7 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
             boolean newValue = !currentValue;
             preferenceManager.setPreference(playerId, preferenceType, newValue);
 
-            player.sendMessage(miniMessage.deserialize(String.format("<white>设置 %s 已切换为：%s",
-                preferenceType.getDisplayName(), newValue ? "<green>启用" : "<red>禁用")));
+            sendPreferenceStatusMessage(player, preferenceType, newValue ? "切换为：%s" : "切换为：%s", newValue);
             return true;
         } catch (IllegalArgumentException e) {
             player.sendMessage(miniMessage.deserialize("<red>无效的设置项！可用设置："));
@@ -156,8 +155,7 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
         try {
             PreferenceType preferenceType = getInternalName(preference);
             preferenceManager.setPreference(playerId, preferenceType, true);
-            player.sendMessage(miniMessage.deserialize(String.format("<white>设置 %s 已<green>启用",
-                preferenceType.getDisplayName())));
+            sendPreferenceStatusMessage(player, preferenceType, "已%s", true);
             return true;
         } catch (IllegalArgumentException e) {
             player.sendMessage(miniMessage.deserialize("<red>无效的设置项！可用设置："));
@@ -180,8 +178,7 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
         try {
             PreferenceType preferenceType = getInternalName(preference);
             preferenceManager.setPreference(playerId, preferenceType, false);
-            player.sendMessage(miniMessage.deserialize(String.format("<white>设置 %s 已<red>禁用",
-                preferenceType.getDisplayName())));
+            sendPreferenceStatusMessage(player, preferenceType, "已%s", false);
             return true;
         } catch (IllegalArgumentException e) {
             player.sendMessage(miniMessage.deserialize("<red>无效的设置项！可用设置："));
@@ -190,6 +187,20 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
                     type.getDisplayName(), type.getKey()))));
             return true;
         }
+    }
+
+    /**
+     * 发送偏好设置状态消息
+     *
+     * @param player 玩家对象
+     * @param preferenceType 偏好设置类型
+     * @param messageFormat 消息格式字符串（包含%s占位符）
+     * @param status 状态值
+     */
+    private void sendPreferenceStatusMessage(Player player, PreferenceType preferenceType, String messageFormat, boolean status) {
+        String statusText = status ? "<green>启用" : "<red>禁用";
+        player.sendMessage(miniMessage.deserialize(String.format("<white>设置 %s " + messageFormat,
+            preferenceType.getDisplayName(), statusText)));
     }
 
     /**
