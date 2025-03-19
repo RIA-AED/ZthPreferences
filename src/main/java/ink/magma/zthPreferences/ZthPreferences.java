@@ -30,7 +30,7 @@ public final class ZthPreferences extends JavaPlugin {
         this.getCommand("pref").setExecutor(new PreferenceCommandExecutor(preferenceManager));
 
         // 注册事件监听器
-        getServer().getPluginManager().registerEvents(new PreferenceListener(preferenceManager), this);
+        getServer().getPluginManager().registerEvents(new PreferenceListener(this, preferenceManager), this);
 
         getLogger().info("ZthPreferences 插件已启用！");
     }
