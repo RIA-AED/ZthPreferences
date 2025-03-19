@@ -144,7 +144,7 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
         try {
             PreferenceType preferenceType = getInternalName(preference);
             preferenceManager.setPreference(playerId, preferenceType, true);
-            sendPreferenceStatusMessage(player, preferenceType, "已%s", true);
+            sendPreferenceStatusMessage(player, preferenceType, "切换为：%s", true);
             return true;
         } catch (IllegalArgumentException e) {
             return handleInvalidPreference(player);
@@ -163,7 +163,7 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
         try {
             PreferenceType preferenceType = getInternalName(preference);
             preferenceManager.setPreference(playerId, preferenceType, false);
-            sendPreferenceStatusMessage(player, preferenceType, "已%s", false);
+            sendPreferenceStatusMessage(player, preferenceType, "切换为：%s", false);
             return true;
         } catch (IllegalArgumentException e) {
             return handleInvalidPreference(player);
