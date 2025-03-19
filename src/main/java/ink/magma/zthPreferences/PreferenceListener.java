@@ -9,6 +9,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
@@ -59,6 +60,25 @@ public class PreferenceListener implements Listener {
                 player.sendActionBar(message);
             }
 
+        }
+    }
+
+    @EventHandler
+    public void onEntityPickupItem(EntityPickupItemEvent event) {
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
+            UUID playerId = player.getUniqueId();
+            boolean allowPickup = preferenceManager.getPreference(playerId, PreferenceType.PICKUP_ITEMS.getKey());
+
+            if (!allowPickup) {
+                event.setCancelled(true);
+                Component message = Component.text()
+                        .content("物品拾取已被您关闭")
+                        .color(PreferenceType.PICKUP_ITEMS.getColor())
+                        .decoration(TextDecoration.ITALIC, false)
+                        .build();
+                player.sendActionBar(message);
+            }
         }
     }
 

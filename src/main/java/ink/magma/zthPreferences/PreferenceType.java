@@ -5,7 +5,8 @@ import net.kyori.adventure.text.format.TextColor;
 
 public enum PreferenceType {
     DROP_ITEMS("drop_items", "物品丢弃", NamedTextColor.GRAY, true),
-    TRAMPLE_CROPS("trample_crops", "耕地踩踏", NamedTextColor.GRAY, true);
+    TRAMPLE_CROPS("trample_crops", "耕地踩踏", NamedTextColor.GRAY, true),
+    PICKUP_ITEMS("pickup_items", "物品拾取", NamedTextColor.GRAY, true);
 
     private final String key;
     private final String displayName;
