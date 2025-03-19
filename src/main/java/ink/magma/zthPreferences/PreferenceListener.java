@@ -69,9 +69,10 @@ public class PreferenceListener implements Listener {
         Map<String, String> prefs = preferenceManager.getAllPreferences(playerId);
 
         if (prefs.isEmpty()) {
-            // 设置默认值
-            preferenceManager.setPreference(playerId, PreferenceType.DROP_ITEMS.getKey(), true);
-            preferenceManager.setPreference(playerId, PreferenceType.TRAMPLE_CROPS.getKey(), true);
+            // 使用循环设置所有偏好设置的默认值
+            for (PreferenceType preference : PreferenceType.values()) {
+                preferenceManager.setPreference(playerId, preference.getKey(), preference.getDefaultValue());
+            }
         }
     }
 }
