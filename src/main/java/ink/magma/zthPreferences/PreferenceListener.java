@@ -82,17 +82,4 @@ public class PreferenceListener implements Listener {
         }
     }
 
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        // 初始化玩家默认设置
-        UUID playerId = event.getPlayer().getUniqueId();
-        Map<String, String> prefs = preferenceManager.getAllPreferences(playerId);
-
-        if (prefs.isEmpty()) {
-            // 使用循环设置所有偏好设置的默认值
-            for (PreferenceType preference : PreferenceType.values()) {
-                preferenceManager.setPreference(playerId, preference.getKey(), preference.getDefaultValue());
-            }
-        }
-    }
 }
