@@ -29,6 +29,17 @@ public class PlayerPreferenceManager {
     }
 
     /**
+     * 获取玩家设置
+     *
+     * @param playerId   玩家UUID
+     * @param preference 偏好类型
+     * @return 设置值，如果不存在则返回false
+     */
+    public boolean getPreference(UUID playerId, PreferenceType preference) {
+        return getPreference(playerId, preference.getKey());
+    }
+
+    /**
      * 设置玩家偏好
      *
      * @param playerId   玩家UUID
@@ -43,6 +54,17 @@ public class PlayerPreferenceManager {
     }
 
     /**
+     * 设置玩家偏好
+     *
+     * @param playerId   玩家UUID
+     * @param preference 偏好类型
+     * @param value      设置值
+     */
+    public void setPreference(UUID playerId, PreferenceType preference, boolean value) {
+        setPreference(playerId, preference.getKey(), value);
+    }
+
+    /**
      * 获取玩家所有设置
      *
      * @param playerId 玩家UUID
@@ -53,5 +75,28 @@ public class PlayerPreferenceManager {
             String key = PREFIX + playerId.toString();
             return jedis.hgetAll(key);
         }
+    }
+    /**
+     * 切换玩家设置
+     *
+     * @param playerId   玩家UUID
+     * @param preference 设置名称
+     * @return 切换后的设置值
+     */
+    public boolean togglePreference(UUID playerId, String preference) {
+        boolean currentValue = getPreference(playerId, preference);
+        setPreference(playerId, preference, !currentValue);
+        return !currentValue;
+    }
+
+    /**
+     * 切换玩家设置
+     *
+     * @param playerId   玩家UUID
+     * @param preference 偏好类型
+     * @return 切换后的设置值
+     */
+    public boolean togglePreference(UUID playerId, PreferenceType preference) {
+        return togglePreference(playerId, preference.getKey());
     }
 }
