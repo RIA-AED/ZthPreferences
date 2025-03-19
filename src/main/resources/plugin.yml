@@ -7,12 +7,17 @@ libraries:
   - 'redis.clients:jedis:5.2.0'
 
 commands:
-  pref:
+  preferences:
     description: 管理个人偏好设置
-    usage: /pref [show|toggle|help]
-    permission: zthpreferences.use
+    usage: /preferences [show|toggle|help]
+    permission: zth.preferences.use
+    aliases: [prefs, pref, setting, settings]
+  drop:
+    description: 调整丢弃物品开关，用于历史兼容
+    usage: /drop
+    permission: zth.preferences.use
 
 permissions:
-  zthpreferences.use:
+  zth.preferences.use:
     description: 允许使用偏好设置命令
     default: true
