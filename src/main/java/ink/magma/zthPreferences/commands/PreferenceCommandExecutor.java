@@ -1,8 +1,12 @@
 package ink.magma.zthPreferences.commands;
 
+import ink.magma.zthPreferences.PreferenceType;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.Arrays;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,11 +21,6 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter {
     private static final MiniMessage miniMessage = MiniMessage.miniMessage();
     
-    // 偏好设置显示名称映射
-    private static final Map<String, String> PREFERENCE_DISPLAY_NAMES = Map.of(
-            "drop_items", "丢弃物品",
-            "trample_crops", "踩踏耕地");
-
     private final PlayerPreferenceManager preferenceManager;
 
     public PreferenceCommandExecutor(PlayerPreferenceManager preferenceManager) {
@@ -78,22 +77,21 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
 
         player.sendMessage(miniMessage.deserialize("<white>===== <white>你的当前设置 <white>====="));
         prefs.forEach((key, value) -> {
-            String displayName = PREFERENCE_DISPLAY_NAMES.getOrDefault(key, key);
+            String displayName = Arrays.stream(PreferenceType.values())
+                    .filter(type -> type.getKey().equals(key))
+                    .findFirst()
+                    .map(PreferenceType::getDisplayName)
+                    .orElse(key);
             player.sendMessage(miniMessage.deserialize(String.format("<gray>%s: <white>%s", displayName, value)));
         });
         return true;
     }
 
-    private String getInternalName(String input) {
-        // 先尝试直接匹配
-        if (PREFERENCE_DISPLAY_NAMES.containsValue(input)) {
-            return PREFERENCE_DISPLAY_NAMES.entrySet().stream()
-                    .filter(entry -> entry.getValue().equals(input))
-                    .findFirst()
-                    .map(Map.Entry::getKey)
-                    .orElse(input);
-        }
-        return input;
+    private PreferenceType getInternalName(String input) {
+        return Arrays.stream(PreferenceType.values())
+                .filter(type -> type.getDisplayName().equals(input) || type.getKey().equals(input))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Invalid preference: " + input));
     }
 
     /**
@@ -105,23 +103,23 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
      * @return 操作是否成功
      */
     private boolean togglePreference(Player player, UUID playerId, String preference) {
-        String internalName = getInternalName(preference);
+        try {
+            PreferenceType preferenceType = getInternalName(preference);
+            
+            boolean currentValue = preferenceManager.getPreference(playerId, preferenceType);
+            boolean newValue = !currentValue;
+            preferenceManager.setPreference(playerId, preferenceType, newValue);
 
-        if (!PREFERENCE_DISPLAY_NAMES.containsKey(internalName)) {
+            player.sendMessage(miniMessage.deserialize(String.format("<white>设置 <aqua>%s <white>已切换为：%s",
+                preferenceType.getDisplayName(), newValue ? "<green>启用" : "<red>禁用")));
+            return true;
+        } catch (IllegalArgumentException e) {
             player.sendMessage(miniMessage.deserialize("<red>无效的设置项！可用设置："));
-            PREFERENCE_DISPLAY_NAMES.forEach(
-                    (key, displayName) -> player.sendMessage(miniMessage.deserialize(String.format("<gray>- <white>%s <gray>(%s)", displayName, key))));
+            Arrays.stream(PreferenceType.values()).forEach(type ->
+                player.sendMessage(miniMessage.deserialize(String.format("<gray>- <white>%s <gray>(%s)",
+                    type.getDisplayName(), type.getKey()))));
             return true;
         }
-
-        boolean currentValue = preferenceManager.getPreference(playerId, internalName);
-        boolean newValue = !currentValue;
-        preferenceManager.setPreference(playerId, internalName, newValue);
-
-        String displayName = PREFERENCE_DISPLAY_NAMES.get(internalName);
-        player.sendMessage(miniMessage.deserialize(String.format("<white>设置 <aqua>%s <white>已切换为：%s",
-            displayName, newValue ? "<green>启用" : "<red>禁用")));
-        return true;
     }
 
     /**
@@ -137,8 +135,9 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
         player.sendMessage(miniMessage.deserialize("<gray>/pref help - 显示此帮助信息"));
         player.sendMessage(miniMessage.deserialize("<gray>注意：设置项可以使用显示名称或内部名称"));
         player.sendMessage(miniMessage.deserialize("<gray>可用设置："));
-        PREFERENCE_DISPLAY_NAMES
-                .forEach((key, displayName) -> player.sendMessage(miniMessage.deserialize(String.format("<gray>- %s (<white>%s<gray>)", displayName, key))));
+        Arrays.stream(PreferenceType.values())
+                .forEach(type -> player.sendMessage(miniMessage.deserialize(String.format("<gray>- %s (<white>%s<gray>)",
+                    type.getDisplayName(), type.getKey()))));
         player.sendMessage(miniMessage.deserialize("<white>======================"));
         return true;
     }
@@ -151,10 +150,10 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
         }
 
         if (args.length == 2 && "toggle".equalsIgnoreCase(args[0])) {
-            return PREFERENCE_DISPLAY_NAMES.entrySet().stream()
-                    .filter(entry -> entry.getKey().toLowerCase().startsWith(args[1].toLowerCase()) ||
-                            entry.getValue().toLowerCase().startsWith(args[1].toLowerCase()))
-                    .map(entry -> String.format("%s (%s)", entry.getValue(), entry.getKey()))
+            return Arrays.stream(PreferenceType.values())
+                    .filter(type -> type.getKey().toLowerCase().startsWith(args[1].toLowerCase()) ||
+                            type.getDisplayName().toLowerCase().startsWith(args[1].toLowerCase()))
+                    .map(type -> String.format("%s (%s)", type.getDisplayName(), type.getKey()))
                     .toList();
         }
 
