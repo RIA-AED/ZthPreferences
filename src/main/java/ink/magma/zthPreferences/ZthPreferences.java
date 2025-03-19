@@ -1,5 +1,6 @@
 package ink.magma.zthPreferences;
 
+import ink.magma.zthPreferences.commands.DropCommandExecutor;
 import ink.magma.zthPreferences.commands.PreferenceCommandExecutor;
 import org.bukkit.plugin.java.JavaPlugin;
 import redis.clients.jedis.JedisPool;
@@ -29,7 +30,7 @@ public final class ZthPreferences extends JavaPlugin {
 
         // 注册命令处理器
         this.getCommand("preferences").setExecutor(new PreferenceCommandExecutor(preferenceManager));
-//        this.getCommand("drop").setExecutor();
+        this.getCommand("drop").setExecutor(new DropCommandExecutor(preferenceManager));
 
         // 注册事件监听器
         getServer().getPluginManager().registerEvents(new PreferenceListener(this, preferenceManager), this);
