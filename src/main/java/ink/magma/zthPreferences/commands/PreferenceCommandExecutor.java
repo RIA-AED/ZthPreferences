@@ -60,6 +60,20 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
                 }
                 return togglePreference(player, playerId, args[1]);
             }
+            case "enable" -> {
+                if (args.length < 2) {
+                    player.sendMessage(miniMessage.deserialize("<gray>用法: <white>/pref enable <配置项>"));
+                    return true;
+                }
+                return enablePreference(player, playerId, args[1]);
+            }
+            case "disable" -> {
+                if (args.length < 2) {
+                    player.sendMessage(miniMessage.deserialize("<gray>用法: <white>/pref disable <配置项>"));
+                    return true;
+                }
+                return disablePreference(player, playerId, args[1]);
+            }
             default -> {
                 return showHelp(player);
             }
@@ -80,7 +94,8 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
                     .findFirst()
                     .map(PreferenceType::getDisplayName)
                     .orElse(key);
-            player.sendMessage(miniMessage.deserialize(String.format("<gray>%s: <white>%s", displayName, value)));
+            player.sendMessage(miniMessage.deserialize(String.format("<gray>%s: <white>%s", displayName,
+                Boolean.parseBoolean(value) ? "开启" : "关闭")));
         });
         return true;
     }
@@ -121,6 +136,63 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
     }
 
     /**
+     * 设置玩家偏好配置项
+     *
+     * @param player     执行命令的玩家
+     * @param playerId   玩家UUID
+     * @param preference 偏好设置名称（支持显示名称或内部名称）
+     * @param value      要设置的值（true/false）
+     * @return 操作是否成功
+     */
+    /**
+     * 启用玩家偏好配置项
+     *
+     * @param player     执行命令的玩家
+     * @param playerId   玩家UUID
+     * @param preference 偏好设置名称（支持显示名称或内部名称）
+     * @return 操作是否成功
+     */
+    private boolean enablePreference(Player player, UUID playerId, String preference) {
+        try {
+            PreferenceType preferenceType = getInternalName(preference);
+            preferenceManager.setPreference(playerId, preferenceType, true);
+            player.sendMessage(miniMessage.deserialize(String.format("<white>设置 %s 已<green>启用",
+                preferenceType.getDisplayName())));
+            return true;
+        } catch (IllegalArgumentException e) {
+            player.sendMessage(miniMessage.deserialize("<red>无效的设置项！可用设置："));
+            Arrays.stream(PreferenceType.values()).forEach(type ->
+                player.sendMessage(miniMessage.deserialize(String.format("<gray>- <white>%s <gray>(%s)",
+                    type.getDisplayName(), type.getKey()))));
+            return true;
+        }
+    }
+
+    /**
+     * 禁用玩家偏好配置项
+     *
+     * @param player     执行命令的玩家
+     * @param playerId   玩家UUID
+     * @param preference 偏好设置名称（支持显示名称或内部名称）
+     * @return 操作是否成功
+     */
+    private boolean disablePreference(Player player, UUID playerId, String preference) {
+        try {
+            PreferenceType preferenceType = getInternalName(preference);
+            preferenceManager.setPreference(playerId, preferenceType, false);
+            player.sendMessage(miniMessage.deserialize(String.format("<white>设置 %s 已<red>禁用",
+                preferenceType.getDisplayName())));
+            return true;
+        } catch (IllegalArgumentException e) {
+            player.sendMessage(miniMessage.deserialize("<red>无效的设置项！可用设置："));
+            Arrays.stream(PreferenceType.values()).forEach(type ->
+                player.sendMessage(miniMessage.deserialize(String.format("<gray>- <white>%s <gray>(%s)",
+                    type.getDisplayName(), type.getKey()))));
+            return true;
+        }
+    }
+
+    /**
      * 显示命令帮助信息
      *
      * @param player 接收帮助信息的玩家
@@ -130,6 +202,8 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
         player.sendMessage(miniMessage.deserialize("<white>===== <white>偏好设置帮助 <white>====="));
         player.sendMessage(miniMessage.deserialize("<gray>/pref show - 显示当前设置"));
         player.sendMessage(miniMessage.deserialize("<gray>/pref toggle <配置项> - 切换指定设置"));
+        player.sendMessage(miniMessage.deserialize("<gray>/pref enable <配置项> - 启用指定配置项"));
+        player.sendMessage(miniMessage.deserialize("<gray>/pref disable <配置项> - 禁用指定配置项"));
         player.sendMessage(miniMessage.deserialize("<gray>/pref help - 显示此帮助信息"));
         player.sendMessage(miniMessage.deserialize("<gray>注意：设置项可以使用显示名称或内部名称"));
         player.sendMessage(miniMessage.deserialize("<gray>可用设置："));
@@ -144,17 +218,17 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias,
             String[] args) {
         if (args.length == 1) {
-            return List.of("show", "toggle");
+            return List.of("show", "toggle", "enable", "disable");
         }
 
-        if (args.length == 2 && "toggle".equalsIgnoreCase(args[0])) {
+        if (args.length == 2 && ("toggle".equalsIgnoreCase(args[0]) || "enable".equalsIgnoreCase(args[0]) || "disable".equalsIgnoreCase(args[0]))) {
             return Arrays.stream(PreferenceType.values())
                     .filter(type -> type.getKey().toLowerCase().startsWith(args[1].toLowerCase()) ||
                             type.getDisplayName().toLowerCase().startsWith(args[1].toLowerCase()))
                     .map(type -> String.format("%s (%s)", type.getDisplayName(), type.getKey()))
                     .toList();
         }
-
+        
         return List.of();
     }
 }
