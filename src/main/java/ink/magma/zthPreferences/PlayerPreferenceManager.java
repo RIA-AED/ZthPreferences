@@ -24,7 +24,10 @@ public class PlayerPreferenceManager {
     public boolean getPreference(UUID playerId, String preference) {
         try (Jedis jedis = jedisPool.getResource()) {
             String key = PREFIX + playerId.toString();
-            return "true".equals(jedis.hget(key, preference));
+            String value = jedis.hget(key, preference);
+            return value != null ? "true".equals(value) : PreferenceType.fromKey(preference)
+                .map(PreferenceType::getDefaultValue)
+                .orElse(false);
         }
     }
 
