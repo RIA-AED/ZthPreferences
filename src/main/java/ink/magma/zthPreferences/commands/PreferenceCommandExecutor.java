@@ -126,30 +126,19 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
             sendPreferenceStatusMessage(player, preferenceType, newValue ? "切换为：%s" : "切换为：%s", newValue);
             return true;
         } catch (IllegalArgumentException e) {
-            player.sendMessage(miniMessage.deserialize("<red>无效的设置项！可用设置："));
-            Arrays.stream(PreferenceType.values()).forEach(type ->
-                player.sendMessage(miniMessage.deserialize(String.format("<gray>- <white>%s <gray>(%s)",
-                    type.getDisplayName(), type.getKey()))));
-            return true;
+            return handleInvalidPreference(player);
         }
     }
 
     /**
-     * 设置玩家偏好配置项
+     * 启用玩家偏好配置项。
+     * 将指定偏好配置项设置为true。
      *
-     * @param player     执行命令的玩家
-     * @param playerId   玩家UUID
-     * @param preference 偏好设置名称（支持显示名称或内部名称）
-     * @param value      要设置的值（true/false）
-     * @return 操作是否成功
-     */
-    /**
-     * 启用玩家偏好配置项
-     *
-     * @param player     执行命令的玩家
-     * @param playerId   玩家UUID
-     * @param preference 偏好设置名称（支持显示名称或内部名称）
-     * @return 操作是否成功
+     * @param player     执行命令的玩家，不能为null
+     * @param playerId   玩家的唯一标识符，不能为null
+     * @param preference 偏好设置名称（支持显示名称或内部名称），不能为null或空
+     * @return 如果操作成功返回true，如果偏好设置无效返回false
+     * @throws IllegalArgumentException 如果preference参数无效
      */
     private boolean enablePreference(Player player, UUID playerId, String preference) {
         try {
@@ -158,11 +147,7 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
             sendPreferenceStatusMessage(player, preferenceType, "已%s", true);
             return true;
         } catch (IllegalArgumentException e) {
-            player.sendMessage(miniMessage.deserialize("<red>无效的设置项！可用设置："));
-            Arrays.stream(PreferenceType.values()).forEach(type ->
-                player.sendMessage(miniMessage.deserialize(String.format("<gray>- <white>%s <gray>(%s)",
-                    type.getDisplayName(), type.getKey()))));
-            return true;
+            return handleInvalidPreference(player);
         }
     }
 
@@ -181,11 +166,7 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
             sendPreferenceStatusMessage(player, preferenceType, "已%s", false);
             return true;
         } catch (IllegalArgumentException e) {
-            player.sendMessage(miniMessage.deserialize("<red>无效的设置项！可用设置："));
-            Arrays.stream(PreferenceType.values()).forEach(type ->
-                player.sendMessage(miniMessage.deserialize(String.format("<gray>- <white>%s <gray>(%s)",
-                    type.getDisplayName(), type.getKey()))));
-            return true;
+            return handleInvalidPreference(player);
         }
     }
 
@@ -204,10 +185,26 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
     }
 
     /**
-     * 显示命令帮助信息
+     * 处理无效的偏好设置项。
+     * 当玩家输入了无效的偏好设置项时，显示所有可用的设置项列表。
      *
-     * @param player 接收帮助信息的玩家
-     * @return 总是返回 true
+     * @param player 执行命令的玩家，不能为null
+     * @return 总是返回true
+     */
+    private boolean handleInvalidPreference(Player player) {
+        player.sendMessage(miniMessage.deserialize("<red>无效的设置项！可用设置："));
+        Arrays.stream(PreferenceType.values()).forEach(type ->
+            player.sendMessage(miniMessage.deserialize(String.format("<gray>- <white>%s <gray>(%s)",
+                type.getDisplayName(), type.getKey()))));
+        return true;
+    }
+
+    /**
+     * 显示偏好设置命令的帮助信息。
+     * 包括所有可用的子命令及其用法说明，以及所有可用的偏好设置项列表。
+     *
+     * @param player 需要显示帮助信息的玩家，不能为null
+     * @return 总是返回true
      */
     private boolean showHelp(Player player) {
         player.sendMessage(miniMessage.deserialize("<white>===== <white>偏好设置帮助 <white>====="));
