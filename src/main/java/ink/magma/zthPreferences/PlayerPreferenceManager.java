@@ -36,7 +36,11 @@ public class PlayerPreferenceManager {
      * @return 设置值，如果不存在则返回false
      */
     public boolean getPreference(UUID playerId, PreferenceType preference) {
-        return getPreference(playerId, preference.getKey());
+        try (Jedis jedis = jedisPool.getResource()) {
+            String key = PREFIX + playerId.toString();
+            String value = jedis.hget(key, preference.getKey());
+            return value != null ? "true".equals(value) : preference.getDefaultValue();
+        }
     }
 
     /**
