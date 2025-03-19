@@ -1,12 +1,9 @@
 package ink.magma.zthPreferences.commands;
 
-import ink.magma.zthPreferences.PreferenceType;
-
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.Arrays;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -16,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import ink.magma.zthPreferences.PlayerPreferenceManager;
+import ink.magma.zthPreferences.PreferenceType;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 
 public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter {
