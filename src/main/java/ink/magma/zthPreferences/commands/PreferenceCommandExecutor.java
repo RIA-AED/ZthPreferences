@@ -1,5 +1,7 @@
 package ink.magma.zthPreferences;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -12,6 +14,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter {
+    private static final MiniMessage miniMessage = MiniMessage.miniMessage();
+    
     // 偏好设置显示名称映射
     private static final Map<String, String> PREFERENCE_DISPLAY_NAMES = Map.of(
             "drop_items", "丢弃物品",
@@ -36,7 +40,7 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label,
             String @NotNull [] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("只有玩家可以使用此命令！");
+            sender.sendMessage(miniMessage.deserialize("<red>只有玩家可以使用此命令！"));
             return true;
         }
 
@@ -53,7 +57,7 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
             }
             case "toggle" -> {
                 if (args.length < 2) {
-                    player.sendMessage("用法: /pref toggle <setting>");
+                    player.sendMessage(miniMessage.deserialize("<gray>用法: <white>/pref toggle <aqua><配置项>"));
                     return true;
                 }
                 return togglePreference(player, playerId, args[1]);
@@ -67,14 +71,14 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
     private boolean showPreferences(Player player, UUID playerId) {
         Map<String, String> prefs = preferenceManager.getAllPreferences(playerId);
         if (prefs.isEmpty()) {
-            player.sendMessage("§c你还没有设置任何偏好！");
+            player.sendMessage(miniMessage.deserialize("<red>你还没有设置任何偏好！"));
             return true;
         }
 
-        player.sendMessage("§6===== 你的当前设置 =====");
+        player.sendMessage(miniMessage.deserialize("<white>===== <white>你的当前设置 <white>====="));
         prefs.forEach((key, value) -> {
             String displayName = PREFERENCE_DISPLAY_NAMES.getOrDefault(key, key);
-            player.sendMessage(String.format("§a%s: §f%s", displayName, value));
+            player.sendMessage(miniMessage.deserialize(String.format("<gray>%s: <white>%s", displayName, value)));
         });
         return true;
     }
@@ -103,9 +107,9 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
         String internalName = getInternalName(preference);
 
         if (!PREFERENCE_DISPLAY_NAMES.containsKey(internalName)) {
-            player.sendMessage("§c无效的设置项！可用设置：");
+            player.sendMessage(miniMessage.deserialize("<red>无效的设置项！可用设置："));
             PREFERENCE_DISPLAY_NAMES.forEach(
-                    (key, displayName) -> player.sendMessage(String.format("§7- %s (§f%s§7)", displayName, key)));
+                    (key, displayName) -> player.sendMessage(miniMessage.deserialize(String.format("<gray>- <white>%s <gray>(%s)", displayName, key))));
             return true;
         }
 
@@ -114,7 +118,8 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
         preferenceManager.setPreference(playerId, internalName, newValue);
 
         String displayName = PREFERENCE_DISPLAY_NAMES.get(internalName);
-        player.sendMessage(String.format("§a设置 %s 已切换为：%s", displayName, newValue ? "§a启用" : "§c禁用"));
+        player.sendMessage(miniMessage.deserialize(String.format("<white>设置 <aqua>%s <white>已切换为：%s",
+            displayName, newValue ? "<green>启用" : "<red>禁用")));
         return true;
     }
 
@@ -125,15 +130,15 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
      * @return 总是返回 true
      */
     private boolean showHelp(Player player) {
-        player.sendMessage("§6===== 偏好设置帮助 =====");
-        player.sendMessage("§a/pref show - 显示当前设置");
-        player.sendMessage("§a/pref toggle <setting> - 切换指定设置");
-        player.sendMessage("§a/pref help - 显示此帮助信息");
-        player.sendMessage("§e注意：设置项可以使用显示名称或内部名称");
-        player.sendMessage("§a可用设置：");
+        player.sendMessage(miniMessage.deserialize("<white>===== <white>偏好设置帮助 <white>====="));
+        player.sendMessage(miniMessage.deserialize("<gray>/pref show - 显示当前设置"));
+        player.sendMessage(miniMessage.deserialize("<gray>/pref toggle <aqua><setting> <gray>- 切换指定设置"));
+        player.sendMessage(miniMessage.deserialize("<gray>/pref help - 显示此帮助信息"));
+        player.sendMessage(miniMessage.deserialize("<gray>注意：设置项可以使用显示名称或内部名称"));
+        player.sendMessage(miniMessage.deserialize("<gray>可用设置："));
         PREFERENCE_DISPLAY_NAMES
-                .forEach((key, displayName) -> player.sendMessage(String.format("§7- %s (§f%s§7)", displayName, key)));
-        player.sendMessage("§6======================");
+                .forEach((key, displayName) -> player.sendMessage(miniMessage.deserialize(String.format("<gray>- %s (<white>%s<gray>)", displayName, key))));
+        player.sendMessage(miniMessage.deserialize("<white>======================"));
         return true;
     }
 
