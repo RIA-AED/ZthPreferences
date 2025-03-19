@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public class PlayerPreferenceManager {
     private final JedisPool jedisPool;
-    private static final String PREFIX = "player_prefs:";
+    private static final String PREFIX = "zth-preferences:";
 
     public PlayerPreferenceManager(JedisPool jedisPool) {
         this.jedisPool = jedisPool;
