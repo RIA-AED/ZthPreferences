@@ -106,4 +106,27 @@ public class PlayerPreferenceManager {
     public boolean togglePreference(UUID playerId, PreferenceType preference) {
         return togglePreference(playerId, preference.getKey());
     }
+
+    /**
+     * 取消玩家偏好设置，恢复默认值
+     *
+     * @param playerId   玩家UUID
+     * @param preference 偏好设置名称
+     */
+    public void unsetPreference(UUID playerId, String preference) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            String key = PREFIX + playerId.toString();
+            jedis.hdel(key, preference);
+        }
+    }
+
+    /**
+     * 取消玩家偏好设置，恢复默认值
+     *
+     * @param playerId   玩家UUID
+     * @param preference 偏好类型
+     */
+    public void unsetPreference(UUID playerId, PreferenceType preference) {
+        unsetPreference(playerId, preference.getKey());
+    }
 }

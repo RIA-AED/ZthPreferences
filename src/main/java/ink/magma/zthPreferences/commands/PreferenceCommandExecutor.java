@@ -74,6 +74,13 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
                 }
                 return disablePreference(player, playerId, args[1]);
             }
+            case "unset" -> {
+                if (args.length < 2) {
+                    player.sendMessage(miniMessage.deserialize("<gray>用法: <white>/pref unset <配置项>"));
+                    return true;
+                }
+                return unsetPreference(player, playerId, args[1]);
+            }
             default -> {
                 return showHelp(player);
             }
@@ -212,6 +219,7 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
         player.sendMessage(miniMessage.deserialize("<gray>/pref toggle <配置项> - 切换指定设置"));
         player.sendMessage(miniMessage.deserialize("<gray>/pref enable <配置项> - 启用指定配置项"));
         player.sendMessage(miniMessage.deserialize("<gray>/pref disable <配置项> - 禁用指定配置项"));
+        player.sendMessage(miniMessage.deserialize("<gray>/pref unset <配置项> - 恢复指定配置项为默认值"));
         player.sendMessage(miniMessage.deserialize("<gray>/pref help - 显示此帮助信息"));
         player.sendMessage(miniMessage.deserialize("<gray>注意：设置项可以使用显示名称或内部名称"));
         player.sendMessage(miniMessage.deserialize("<gray>可用设置："));
@@ -222,14 +230,34 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
         return true;
     }
 
+    /**
+     * 取消玩家偏好设置，恢复默认值
+     *
+     * @param player     执行命令的玩家
+     * @param playerId   玩家UUID
+     * @param preference 偏好设置名称（支持显示名称或内部名称）
+     * @return 操作是否成功
+     */
+    private boolean unsetPreference(Player player, UUID playerId, String preference) {
+        try {
+            PreferenceType preferenceType = getInternalName(preference);
+            preferenceManager.unsetPreference(playerId, preferenceType);
+            player.sendMessage(miniMessage.deserialize(String.format("<white>已恢复 %s 为默认设置",
+                preferenceType.getDisplayName())));
+            return true;
+        } catch (IllegalArgumentException e) {
+            return handleInvalidPreference(player);
+        }
+    }
+
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias,
             String[] args) {
         if (args.length == 1) {
-            return List.of("show", "toggle", "enable", "disable");
+            return List.of("show", "toggle", "enable", "disable", "unset");
         }
 
-        if (args.length == 2 && ("toggle".equalsIgnoreCase(args[0]) || "enable".equalsIgnoreCase(args[0]) || "disable".equalsIgnoreCase(args[0]))) {
+        if (args.length == 2 && ("toggle".equalsIgnoreCase(args[0]) || "enable".equalsIgnoreCase(args[0]) || "disable".equalsIgnoreCase(args[0]) || "unset".equalsIgnoreCase(args[0]))) {
             return Arrays.stream(PreferenceType.values())
                     .filter(type -> type.getKey().toLowerCase().startsWith(args[1].toLowerCase()) ||
                             type.getDisplayName().toLowerCase().startsWith(args[1].toLowerCase()))
