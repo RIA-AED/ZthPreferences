@@ -14,15 +14,18 @@ import org.jetbrains.annotations.NotNull;
 
 import ink.magma.zthPreferences.PlayerPreferenceManager;
 import ink.magma.zthPreferences.PreferenceType;
+import ink.magma.zthPreferences.ZthPreferences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 
 public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter {
     private static final MiniMessage miniMessage = MiniMessage.miniMessage();
     
     private final PlayerPreferenceManager preferenceManager;
+    private final ZthPreferences plugin;
 
-    public PreferenceCommandExecutor(PlayerPreferenceManager preferenceManager) {
+    public PreferenceCommandExecutor(PlayerPreferenceManager preferenceManager, ZthPreferences plugin) {
         this.preferenceManager = preferenceManager;
+        this.plugin = plugin;
     }
 
     /**
@@ -80,6 +83,13 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
                     return true;
                 }
                 return unsetPreference(player, playerId, args[1]);
+            }
+            case "reload" -> {
+                if (!player.hasPermission("zth.preferences.admin")) {
+                    player.sendMessage(miniMessage.deserialize("<red>你没有权限执行此命令！"));
+                    return true;
+                }
+                return reloadPlugin(player);
             }
             default -> {
                 return showHelp(player);
@@ -250,10 +260,19 @@ public class PreferenceCommandExecutor implements CommandExecutor, TabCompleter 
         }
     }
 
+    private boolean reloadPlugin(Player player) {
+        plugin.reload();
+        player.sendMessage(miniMessage.deserialize("<green>插件已成功重载！"));
+        return true;
+    }
+
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias,
             String[] args) {
         if (args.length == 1) {
+            if (sender.hasPermission("zth.preferences.admin")) {
+                return List.of("show", "toggle", "enable", "disable", "unset", "reload");
+            }
             return List.of("show", "toggle", "enable", "disable", "unset");
         }
 

@@ -9,9 +9,21 @@ import redis.clients.jedis.JedisPoolConfig;
 public final class ZthPreferences extends JavaPlugin {
     private JedisPool jedisPool;
     private PlayerPreferenceManager preferenceManager;
+    private PreferenceListener preferenceListener;
 
     @Override
     public void onEnable() {
+        load();
+        getLogger().info("ZthPreferences 插件已启用！");
+    }
+
+    @Override
+    public void onDisable() {
+        unload();
+        getLogger().info("ZthPreferences 插件已禁用！");
+    }
+
+    public void load() {
         // 保存默认配置
         saveDefaultConfig();
 
@@ -29,21 +41,30 @@ public final class ZthPreferences extends JavaPlugin {
         preferenceManager = new PlayerPreferenceManager(jedisPool);
 
         // 注册命令处理器
-        this.getCommand("preferences").setExecutor(new PreferenceCommandExecutor(preferenceManager));
+        this.getCommand("preferences").setExecutor(new PreferenceCommandExecutor(preferenceManager, this));
         this.getCommand("drop").setExecutor(new DropCommandExecutor(preferenceManager));
 
         // 注册事件监听器
-        getServer().getPluginManager().registerEvents(new PreferenceListener(this, preferenceManager), this);
-
-        getLogger().info("ZthPreferences 插件已启用！");
+        this.preferenceListener = new PreferenceListener(this, preferenceManager);
+        getServer().getPluginManager().registerEvents(this.preferenceListener, this);
     }
 
-    @Override
-    public void onDisable() {
+    public void unload() {
+        // 注销事件监听器
+        if (this.preferenceListener != null) {
+            org.bukkit.event.HandlerList.unregisterAll(this.preferenceListener);
+        }
+
         // 关闭 Redis 连接池
         if (jedisPool != null) {
             jedisPool.close();
         }
-        getLogger().info("ZthPreferences 插件已禁用！");
+    }
+
+    public void reload() {
+        unload();
+        reloadConfig();
+        load();
+        getLogger().info("ZthPreferences 插件已重载！");
     }
 }

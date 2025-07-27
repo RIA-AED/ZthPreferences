@@ -1,0 +1,6 @@
+# Redis 连接配置
+redis:
+  host: localhost
+  port: 6379
+  timeout: 2000
+  maxTotal: 128
